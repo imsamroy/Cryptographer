@@ -1,0 +1,50 @@
+name: Build Windows Release (Static)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Set up Qt Static Build
+      run: |
+        Invoke-WebRequest -Uri https://download.qt.io/official_releases/qt/6.6/6.6.1/single/qt-everywhere-src-6.6.1.zip -OutFile qt.zip
+        Expand-Archive -Path .\qt.zip -DestinationPath .
+        cd qt-everywhere-src-6.6.1
+        perl init-repository
+
+    - name: Build Qt statically
+      run: |
+        .\configure -static -release -opensource -confirm-license -opengl desktop -platform win32-msvc -prefix $PWD\qtbase -skip qt3d qtactiveqt qtdatavis3d qtgamepad qtlocation qtlottie qtmultimedia qtquick3d qtquick3dphysics qtquickeffectmaker qtquicktimeline qtsensors qtserialport qtwayland qtwebengine qtwebview qtdeclarative
+        mingw32-make -j4
+        mingw32-make install
+
+    - name: Set up Qt Static Environment
+      run: |
+        echo 'export PATH=$PWD/qtbase/bin:$PATH' >> $GITHUB_ENV
+        echo 'export QMAKESPEC=$PWD/qtbase/mkspecs/win32-msvc' >> $GITHUB_ENV
+
+    - name: Build Application
+      run: |
+        qmake CONFIG+=release static
+        mingw32-make -j4
+
+    - name: Package Application
+      run: |
+        cp release/Cryptographer.exe Cryptographer.exe
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Cryptographer
+        path: Cryptographer.exe
