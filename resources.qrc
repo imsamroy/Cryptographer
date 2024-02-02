@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Cryptographer.png</file>
+    </qresource>
+</RCC>

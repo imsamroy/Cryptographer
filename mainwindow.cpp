@@ -293,7 +293,7 @@ void MainWindow::aboutMsg()
     websiteLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
     websiteLabel->setOpenExternalLinks(true);
     QObject::connect(websiteLabel, &QLabel::linkActivated, [](const QString& link) {
-        QDesktopServices::openUrl(QUrl(link));
+        QProcess::startDetached("xdg-open", QStringList() << link);
     });
     layout->addWidget(websiteLabel);
 
@@ -313,7 +313,7 @@ void MainWindow::aboutMsg()
     sourceLink->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     QUrl githubLink("https://github.com/imsamroy/Cryptographer");
     QObject::connect(sourceLink, &QPushButton::clicked, [githubLink]() {
-        QDesktopServices::openUrl(githubLink);
+        QProcess::startDetached("xdg-open", QStringList() << githubLink.toString());
     });
 
     QHBoxLayout* buttonLayout = new QHBoxLayout(&aboutDialog);
@@ -327,7 +327,7 @@ void MainWindow::aboutMsg()
 void MainWindow::reportIssueFunc()
 {
     QUrl githubIssueLink("https://github.com/imsamroy/Cryptographer/issues");
-    QDesktopServices::openUrl(githubIssueLink);
+    QProcess::startDetached("xdg-open", QStringList() << githubIssueLink.toString());
 }
 
 void MainWindow::checkUpdateFunc()
@@ -352,7 +352,7 @@ void MainWindow::handleRequestFinished()
                 QMessageBox *newUpdateMsg = new QMessageBox(this);
                 newUpdateMsg->setWindowTitle("Update check");
                 newUpdateMsg->setIcon(QMessageBox::Information); //QMessageBox::information was used to directly declare the widget but QMessageBox::Information here represents only the icon
-                newUpdateMsg->setText("New update available: "+latestReleaseTag+"<br>Current version: "+appVersion+"<br>Visit: <a href = \"https://github.com/imsamroy/Cryptographer/releases/latest\">https://github.com/imsamroy/Cryptographer/releases/latest</a> to download the latest release");
+                newUpdateMsg->setText("New update available: "+latestReleaseTag+"<br>Current version: "+appVersion+"<br>Visit: <a href = \"https://github.com/imsamroy/Cryptographer/releases\">https://github.com/imsamroy/Cryptographer/releases/latest</a> to download the latest release");
                 newUpdateMsg->setTextFormat(Qt::RichText);
                 newUpdateMsg->setTextInteractionFlags(Qt::TextBrowserInteraction);
                 newUpdateMsg->addButton(QMessageBox::Close);
@@ -411,7 +411,7 @@ void MainWindow::applyFontFunc()
 
 void MainWindow::openGithubReleases()
 {
-    QDesktopServices::openUrl(QUrl("https://github.com/imsamroy/Cryptographer/releases"));
+    QProcess::startDetached("xdg-open", QStringList() << "https://github.com/imsamroy/Cryptographer/releases");
 }
 
 void MainWindow::cipherInputDialog()
