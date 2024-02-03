@@ -32,9 +32,8 @@ jobs:
 
     - name: Set Qt path and refresh
       run: |
-        echo "::add-path::D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin"
-        echo "PATH=$PATH:D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_ENV
-      shell: bash
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_PATH
+      shell: powershell
 
     - name: Configure CMake Project
       working-directory: ${{github.workspace}}
