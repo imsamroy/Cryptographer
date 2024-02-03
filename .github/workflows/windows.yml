@@ -1,26 +1,26 @@
-name: Deploy Windows release
+name: Compile and Release Qt6 Project
 
 on: push
 
 env:
-  QT_VERSION:     "6.2.0"
-  MINGW_VERSION:  "win64_mingw81"
-  MINGW_PATH:     "mingw81_64"
-  BUILD_TYPE:     Release
+  QT_VERSION: "6.2.0"
+  MINGW_VERSION: "win64_mingw81"
+  MINGW_PATH: "mingw81_64"
+  BUILD_TYPE: Release
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-    -
+    - name: Checkout Repository
       uses: actions/checkout@v2
-    -
-      name: Install correct version of Mingw
+
+    - name: Install correct version of Mingw
       uses: crazy-max/ghaction-chocolatey@v1
       with:
         args: install mingw --version=8.1.0 -y
-    -
-      name: Install Qt
+
+    - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
         host: windows
@@ -29,23 +29,24 @@ jobs:
         arch: ${{ env.MINGW_VERSION }}
         dir: "${{github.workspace}}/qt"
         install-deps: "true"
-    -
-      name: Set Qt path and refresh
+
+    - name: Set Qt path and refresh
       run: |
-        echo "${{github.workspace}}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        refreshenv
-    -
-      name: Configure CMake Project
+        echo "::add-path::D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin"
+        echo "PATH=$PATH:D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Configure CMake Project
       working-directory: ${{github.workspace}}
       env:
         CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
       run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "CodeBlocks - MinGW Makefiles" -B ${{github.workspace}}/build
-    -
-      name: Build project
+
+    - name: Build project
       working-directory: ${{github.workspace}}/build
       run: mingw32-make.exe
-    -
-      name: Compress portable program
+
+    - name: Compress portable program
       run: |
         mkdir ${{github.workspace}}\build\all\
         cp ${{github.workspace}}/build/RePr.exe ${{github.workspace}}\build\all\
@@ -53,8 +54,8 @@ jobs:
         windeployqt.exe RePr.exe --release
         ls
         Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\final.zip
-    -
-      name: Upload Artifacts
+
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: windows-release
