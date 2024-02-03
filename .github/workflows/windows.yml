@@ -47,9 +47,9 @@ jobs:
     - name: Compress portable program
       run: |
         mkdir ${{github.workspace}}\build\all\
-        cp ${{github.workspace}}/build/RePr.exe ${{github.workspace}}\build\all\
+        cp ${{github.workspace}}/build/Cryptographer.exe ${{github.workspace}}\build\all\
         cd ${{github.workspace}}\build\all\
-        windeployqt.exe RePr.exe --release
+        windeployqt.exe Cryptographer.exe --release
         ls
         Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\final.zip
 
