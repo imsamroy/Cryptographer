@@ -3,7 +3,7 @@ name: Compile and Release Qt6 Project
 on: push
 
 env:
-  QT_VERSION: "6.2.0"
+  QT_VERSION: "6.6.1"
   MINGW_VERSION: "win64_mingw81"
   MINGW_PATH: "mingw81_64"
   BUILD_TYPE: Release
@@ -16,12 +16,12 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install correct version of Mingw
-      uses: crazy-max/ghaction-chocolatey@v1
+      uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw --version=8.1.0 -y
+        args: install mingw --version=11.0.0 -y
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v2
+      uses: jurplel/install-qt-action@v3
       with:
         host: windows
         target: "desktop"
@@ -30,19 +30,18 @@ jobs:
         dir: "${{github.workspace}}/qt"
         install-deps: "true"
 
-    - name: Set Qt path and refresh
+    - name: Set Qt path for qmake
       run: |
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw81_64/bin" >> $GITHUB_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw81_64/bin" >> $GITHUB_ENV
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw81_64/bin" >> $env:QMAKE_PATH
       shell: powershell
 
-    - name: Configure CMake Project
+    - name: Configure qmake Project
       working-directory: ${{github.workspace}}
-      env:
-        CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
-      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "CodeBlocks - MinGW Makefiles" -B ${{github.workspace}}/build
+      run: qmake -spec win32-g++ -o Makefile
 
     - name: Build project
-      working-directory: ${{github.workspace}}/build
       run: mingw32-make.exe
 
     - name: Compress portable program
@@ -55,7 +54,7 @@ jobs:
         Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\final.zip
 
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows-release
         path: ${{github.workspace}}/build/final.zip
