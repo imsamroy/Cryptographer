@@ -4,8 +4,8 @@ on: push
 
 env:
   QT_VERSION: "6.6.1"
-  MINGW_VERSION: "win64_mingw81"
-  MINGW_PATH: "mingw81_64"
+  MINGW_VERSION: "win64_mingw132"
+  MINGW_PATH: "mingw132_64"
   BUILD_TYPE: Release
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     - name: Install correct version of Mingw
       uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw --version=11.0.0 -y
+        args: install mingw --version=13.2.0 -y
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
