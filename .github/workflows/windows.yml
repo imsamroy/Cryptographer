@@ -47,7 +47,7 @@ jobs:
     - name: Compress portable program
       run: |
         mkdir ${{github.workspace}}\build\all\
-        cp ${{github.workspace}}/build/Cryptographer.exe ${{github.workspace}}\build\all\
+        cp D:/a/Cryptographer/Cryptographer/release/Cryptographer.exe ${{github.workspace}}\build\all\
         cd ${{github.workspace}}\build\all\
         windeployqt.exe Cryptographer.exe --release
         ls
