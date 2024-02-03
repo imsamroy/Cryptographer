@@ -1,34 +1,61 @@
-name: Deploy Windows Release
+name: Deploy Windows release
 
-on:
-  push:
-    branches:
-      - main
+on: push
+
+env:
+  QT_VERSION:     "6.2.0"
+  MINGW_VERSION:  "win64_mingw81"
+  MINGW_PATH:     "mingw81_64"
+  BUILD_TYPE:     Release
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout Repository
+    -
       uses: actions/checkout@v2
-
-    - name: Set up Qt
-      uses: jurplel/install-qt-action@v3
+    -
+      name: Install correct version of Mingw
+      uses: crazy-max/ghaction-chocolatey@v1
       with:
-        version: '6.6.1'  # Replace with your Qt version
-        host: 'windows'
-        target: 'desktop'
-
-    - name: Build and Deploy
+        args: install mingw --version=8.1.0 -y
+    -
+      name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        host: windows
+        target: "desktop"
+        version: ${{ env.QT_VERSION }}
+        arch: ${{ env.MINGW_VERSION }}
+        dir: "${{github.workspace}}/qt"
+        install-deps: "true"
+    -
+      name: Set Qt path and refresh
       run: |
-        qmake
-        make
-        windeployqt --no-translations --no-angle --no-system-d3d-compiler .
-        7z a Cryptographer.zip *
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
+        echo "${{github.workspace}}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        refreshenv
+    -
+      name: Configure CMake Project
+      working-directory: ${{github.workspace}}
+      env:
+        CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
+      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "CodeBlocks - MinGW Makefiles" -B ${{github.workspace}}/build
+    -
+      name: Build project
+      working-directory: ${{github.workspace}}/build
+      run: mingw32-make.exe
+    -
+      name: Compress portable program
+      run: |
+        mkdir ${{github.workspace}}\build\all\
+        cp ${{github.workspace}}/build/RePr.exe ${{github.workspace}}\build\all\
+        cd ${{github.workspace}}\build\all\
+        windeployqt.exe RePr.exe --release
+        ls
+        Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\final.zip
+    -
+      name: Upload Artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: windows-release
-        path: Cryptographer.zip
+        path: ${{github.workspace}}/build/final.zip
