@@ -292,8 +292,8 @@ void MainWindow::aboutMsg()
     websiteLabel->setTextFormat(Qt::RichText);
     websiteLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
     websiteLabel->setOpenExternalLinks(true);
-    QObject::connect(websiteLabel, &QLabel::linkActivated, [](const QString& link) {
-        QProcess::startDetached("xdg-open", QStringList() << link);
+    QObject::connect(websiteLabel, &QLabel::linkActivated, [](const QString& link2) {
+        QDesktopServices::openUrl(QUrl(link2));
     });
     layout->addWidget(websiteLabel);
 
@@ -311,9 +311,9 @@ void MainWindow::aboutMsg()
     QPushButton* sourceLink = new QPushButton("Source code");
     sourceLink->setBaseSize(100,30);
     sourceLink->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    QUrl githubLink("https://github.com/imsamroy/Cryptographer");
-    QObject::connect(sourceLink, &QPushButton::clicked, [githubLink]() {
-        QProcess::startDetached("xdg-open", QStringList() << githubLink.toString());
+    QUrl projectGithubLink("https://github.com/imsamroy/Cryptographer");
+    QObject::connect(sourceLink, &QPushButton::clicked, [projectGithubLink]() {
+        QDesktopServices::openUrl(projectGithubLink);
     });
 
     QHBoxLayout* buttonLayout = new QHBoxLayout(&aboutDialog);
@@ -327,7 +327,7 @@ void MainWindow::aboutMsg()
 void MainWindow::reportIssueFunc()
 {
     QUrl githubIssueLink("https://github.com/imsamroy/Cryptographer/issues");
-    QProcess::startDetached("xdg-open", QStringList() << githubIssueLink.toString());
+    QDesktopServices::openUrl(githubIssueLink);
 }
 
 void MainWindow::checkUpdateFunc()
@@ -411,7 +411,7 @@ void MainWindow::applyFontFunc()
 
 void MainWindow::openGithubReleases()
 {
-    QProcess::startDetached("xdg-open", QStringList() << "https://github.com/imsamroy/Cryptographer/releases");
+    QDesktopServices::openUrl(QUrl("https://github.com/imsamroy/Cryptographer/releases"));
 }
 
 void MainWindow::cipherInputDialog()
@@ -505,7 +505,7 @@ void MainWindow::cipherText()
                 cipherSuccessInfo->setWindowTitle("Message successfully ciphered");
                 cipherSuccessInfo->resize(400, 200);
 
-                QLabel *cipherSuccess = new QLabel("Your message has been successfully ciphered!<br><br>The ciphered message file is stored in your system<br>in the file at: "+savedFilePath);
+                QLabel *cipherSuccess = new QLabel("Your message has been successfully ciphered!<br><br>The ciphered message is stored in your system<br>in the file at: "+savedFilePath);
                 QVBoxLayout *vbox = new QVBoxLayout(cipherSuccessInfo);
 
                 QPushButton *openCipheredFileDir = new QPushButton("Open folder containing ciphered message");
