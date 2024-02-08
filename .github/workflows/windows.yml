@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install correct version of Mingw
       uses: crazy-max/ghaction-chocolatey@v3
@@ -57,4 +57,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: windows-release
-        path: ${{github.workspace}}/build/final.zip
+        path: ${{github.workspace}}/build/windows-release.zip
