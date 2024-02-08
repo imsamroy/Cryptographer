@@ -1,4 +1,4 @@
-name: Compile and Release Qt6 Project
+name: Compile and Deploy for Windows
 
 on: push
 
