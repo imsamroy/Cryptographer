@@ -43,7 +43,6 @@ jobs:
         run: |
           sudo add-apt-repository universe
           sudo apt install libfuse2
-          sudo apt-get install build-essentials
           sudo apt-get install libicu-dev
           sudo apt-get install libxcb-cursor-dev
           wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
