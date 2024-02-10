@@ -36,7 +36,6 @@ jobs:
         working-directory: ${{ env.SOURCE_DIR }}/build
         run:  |
               qmake -r ${{ env.SOURCE_DIR }}/Cryptographer.pro -o Makefile
-              cat Makefile
               make
               
       - name: AppImage
@@ -50,7 +49,7 @@ jobs:
           wget -c "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
           chmod a+x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-checkrt.sh linuxdeploy-plugin-qt-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/6.6.1/gcc_64/lib/
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable release/Cryptographer --create-desktop-file --icon-file ${{ env.SOURCE_DIR }}/Cryptographer.svg --plugin qt --plugin checkrt --output appimage
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable Cryptographer --create-desktop-file --icon-file ${{ env.SOURCE_DIR }}/Cryptographer.svg --plugin qt --plugin checkrt --output appimage
           mv Cryptographer*.AppImage ${{ env.ARTIFACT }}
       
       - name: Linux artifact
