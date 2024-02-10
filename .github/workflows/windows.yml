@@ -3,9 +3,9 @@ name: Compile and Deploy for Windows
 on: push
 
 env:
-  QT_VERSION: "6.2.0"
-  MINGW_VERSION: "win64_mingw81"
-  MINGW_PATH: "mingw81_64"
+  QT_VERSION: "6.6.1"
+  MINGW_VERSION: "win64_mingw"
+  MINGW_PATH: "mingw_64"
   BUILD_TYPE: Release
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     - name: Install correct version of Mingw
       uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw --version=8.1.0 -y
+        args: install mingw
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -32,9 +32,9 @@ jobs:
 
     - name: Set Qt path for qmake
       run: |
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_PATH
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $GITHUB_ENV
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.2.0/mingw81_64/bin" >> $env:QMAKE_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_ENV
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $env:QMAKE_PATH
       shell: powershell
 
     - name: Configure qmake Project
@@ -51,7 +51,7 @@ jobs:
         cd ${{github.workspace}}\build\all\
         windeployqt.exe Cryptographer.exe --release
         ls
-        Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\final.zip
+        Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\windows-release.zip
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
