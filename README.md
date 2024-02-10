@@ -21,6 +21,9 @@
     <a href="https://github.com/imsamroy/Cryptographer/blob/master/LICENSE">
       <img src="https://img.shields.io/github/license/imsamroy/Cryptographer.svg" alt="License" />
     </a>
+    <a href="https://github.com/imsamroy/Cryptographer/actions/workflows/linux.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/imsamroy/Cryptographer/linux.yml?label=linux" alt="Linux Build Status" />
+    </a>
     <a href="https://github.com/imsamroy/Cryptographer/actions/workflows/windows.yml">
       <img src="https://img.shields.io/github/actions/workflow/status/imsamroy/Cryptographer/windows.yml?label=windows" alt="Windows Build Status" />
     </a>
