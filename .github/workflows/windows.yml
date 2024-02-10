@@ -46,15 +46,13 @@ jobs:
 
     - name: Compress portable program
       run: |
-        mkdir ${{github.workspace}}\build\all\
+        mkdir ${{github.workspace}}\build\windows-deployed\
         cp D:/a/Cryptographer/Cryptographer/release/Cryptographer.exe ${{github.workspace}}\build\all\
-        cd ${{github.workspace}}\build\all\
+        cd ${{github.workspace}}\build\windows-deployed\
         windeployqt.exe Cryptographer.exe --release
-        ls
-        Compress-Archive -Path ${{github.workspace}}\build\all\ -DestinationPath ${{github.workspace}}\build\windows-release.zip
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: windows-release
-        path: ${{github.workspace}}/build/windows-release.zip
+        name: windows-deployed
+        path: ${{github.workspace}}/build/windows-deployed
