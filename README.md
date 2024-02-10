@@ -3,7 +3,7 @@
   <p>
     <h1>
       <a href="https://github.com/imsamroy/Cryptographer">
-        <img src="Cryptographer.png" width=128 alt="Cryptographer" />
+        <img src="Cryptographer.svg" width=128 alt="Cryptographer" />
       </a>
       <br />
       Cryptographer
