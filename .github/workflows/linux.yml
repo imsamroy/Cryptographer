@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -37,7 +35,7 @@ jobs:
       - name: Build
         working-directory: ${{ env.SOURCE_DIR }}/build
         run:  |
-              qmake -r ${{ env.SOURCE_DIR }}/Cryptographer.pro
+              qmake -r ${{ env.SOURCE_DIR }}/Cryptographer.pro -o Makefile
               make
               
       - name: AppImage
