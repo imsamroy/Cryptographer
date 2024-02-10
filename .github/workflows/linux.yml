@@ -1,0 +1,58 @@
+name: Compile and Deploy for Linux
+
+on: push
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  SOURCE_DIR:   ${{ github.workspace }}
+  QT_VERSION:   6.6.1
+  ARTIFACT:     Cryptographer-Linux-x86_64.AppImage
+
+jobs:
+  build:
+    runs-on:  ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version:      ${{ env.QT_VERSION }}
+          host:         linux
+          target:       desktop
+          arch:         gcc_64
+          dir:          ${{ env.SOURCE_DIR }}/qt
+          setup-python: false
+              
+      - name: Create build directory
+        run:  mkdir ${{ env.SOURCE_DIR }}/build
+
+      - name: Build
+        working-directory: ${{ env.SOURCE_DIR }}/build
+        run:  |
+              qmake -r ${{ env.SOURCE_DIR }}/Cryptographer.pro
+              make
+              
+      - name: AppImage
+        working-directory: ${{ env.SOURCE_DIR }}/build
+        run: |
+          wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -c "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          wget -c "https://github.com/darealshinji/linuxdeploy-plugin-checkrt/releases/download/continuous/linuxdeploy-plugin-checkrt.sh"
+          chmod a+x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-checkrt.sh linuxdeploy-plugin-qt-x86_64.AppImage
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/6.6.1/gcc_64/lib/
+          ./linuxdeploy-x86_64.AppImage --appdir Cryptographer --executable release/Cryptographer --create-desktop-file --icon-file ${{ env.SOURCE_DIR }}/Cryptographer.svg --plugin qt --plugin checkrt --output appimage
+          mv Cryptographer*.AppImage ${{ env.ARTIFACT }}
+      
+      - name: Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: ${{ env.SOURCE_DIR }}/build/${{ env.ARTIFACT }}
