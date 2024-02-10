@@ -36,6 +36,7 @@ jobs:
         working-directory: ${{ env.SOURCE_DIR }}/build
         run:  |
               qmake -r ${{ env.SOURCE_DIR }}/Cryptographer.pro -o Makefile
+              cat Makefile
               make
               
       - name: AppImage
