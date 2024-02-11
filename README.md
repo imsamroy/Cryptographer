@@ -47,7 +47,7 @@ Cryptographer is currently supported on the following platforms/systems:
 
 ## Installation
 
-Cryptographer can be installed easily on most GNU/Linux distributions and Windows systems
+Currently, Cryptographer can be installed easily on most GNU/Linux distributions and Windows systems
 
 ### Installing on GNU/Linux systems:
 
