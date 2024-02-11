@@ -73,4 +73,36 @@ For Windows users, Cryptographer can be installed on your Windows system using t
 
 - Run the exe file which you downloaded and it will open the Cryptographer Windows Installer which will guide you through the very simple Windows installation process.
 
+- Once installation is finished, just open your Start Menu and you will find "Cryptographer" there installed as an app.
+
+**PLEASE NOTE:** When it will ask you for the installation directory, please choose an empty folder which you created or else, leave it as the default one which will be given. If you choose a folder which is not empty, during uninstallation it will delete that entire folder and it will delete your other files too which will be there in that folder. When you try to select a non-empty folder you will get a warning from the installer so please follow it.
+
+#### Uninstall from Windows system:
+
+For Windows users, Cryptographer can be uninstalled using the Maintenance Tool which is added in your system during the installation process.
+
+- Open the folder which you selected as the installation directory during the installation process
+
+- You will find a file named like "maintenancetool.exe" there, run it. After it opens, select Remove/Uninstall components and it will guide you through the uninstallation.
+
+**PLEASE NOTE:** Only proceed with uninstallation if when selecting the installation directory during installation, you had not got any warning from the installer that you are selecting a non-empty folder. Uninstalling will delete the entire folder which you had chosen as the installation directory so please ensure that the folder you had chosen during installation was an empty folder you created or, you left it as the default value.
+
 ## Building from source
+
+- Follow any online guide to install the following on your system to be able to build from source:
+  - Qt (either Qt5 or Qt6)
+  - GCC (for Linux), or MinGW (for Windows)
+
+- On Linux if you have git installed then run:
+  ```shell
+  git clone https://github.com/imsamroy/Cryptographer.git
+  ```
+  On Windows download and extract this zip: https://github.com/imsamroy/Cryptographer/archive/refs/heads/main.zip
+
+- Now you have the project source code in the directory named "Cryptographer" or "Cryptographer-main", cd into that directory in your Terminal/Command Prompt and then run:
+  ```shell
+  qmake -r Cryptographer.pro -o Makefile
+  ```
+ Now on Linux run ```make``` or, on Windows run ```mingw32-make```
+
+- Now you should see the executable for your system in that folder or in a folder named something like "release" in that folder
