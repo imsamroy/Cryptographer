@@ -13,6 +13,8 @@
 #include <QLabel>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QFile>
+#include <QRadioButton>
 
 class MainWindow : public QMainWindow
 {
@@ -50,6 +52,8 @@ private:
     QString message;
     QString savedFilePath;
     QString decipheredMsg;
+    QFile *themeSettingsFile;
+    QFile *fontSettingsFile;
 
 public slots:
     void setDarkMode();
@@ -71,6 +75,9 @@ public slots:
     void openCipheredFileFunc();
     void decipherText();
     void copyMsg();
+    void saveDarkMode();
+    void saveLightMode();
+    void saveFont();
 
 signals:
     void appFontChanged(QFont newFont);

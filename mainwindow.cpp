@@ -29,14 +29,154 @@
 #include <QChar>
 #include <QProcess>
 #include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QStyleHints>
+#include <QJsonParseError>
+#include <QByteArray>
+#include <QRadioButton>
+#include <QRandomGenerator>
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle("Cryptographer");
-    resize(1000, 500);
+    resize(1100, 550);
 
-    appVersion = "v0.0.1";
+    appVersion = "v0.0.2";
+
+    QDir dir(QDir::toNativeSeparators(QDir::homePath()+"/CryptographerData"));
+    themeSettingsFile = new QFile(QDir::toNativeSeparators(QDir::homePath()+"/CryptographerData/themeSettings.json"));
+    fontSettingsFile = new QFile(QDir::toNativeSeparators(QDir::homePath()+"/CryptographerData/fontSettings.json"));
+    if (dir.exists()) {
+        if (themeSettingsFile->exists() && themeSettingsFile->size()!=0) {
+            if (themeSettingsFile->open(QIODevice::ReadOnly)) {
+                QByteArray jsonBytes = themeSettingsFile->readAll();
+                themeSettingsFile->close();
+
+                QJsonParseError parseError;
+                QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonBytes, &parseError);
+                if (parseError.error == QJsonParseError::NoError) {
+                    if (jsonDoc.isObject()) {
+                        QJsonObject jsonObj = jsonDoc.object();
+
+                        if (jsonObj.value("theme").toString() == "dark") {
+                            setDarkMode();
+                        }
+                        else if (jsonObj.value("theme").toString() == "light") {
+                            setLightMode();
+                        }
+                        else {
+                            QMessageBox msgBox;
+                            msgBox.warning(this, "Failed to load theme from settings", "No valid theme specified in settings. Click OK to continue anyway.");
+                            msgBox.show();
+                        }
+                    }
+                }
+                else {
+                    QMessageBox msgBox;
+                    msgBox.warning(this, "Theme settings file: Parse Error", "Failed to parse JSON data: "+parseError.errorString()+"Click OK to continue anyway.");
+                    msgBox.show();
+                }
+            }
+        }
+        else {
+            if (themeSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                QJsonObject jsonObj;
+                QStyleHints *styleHints = QGuiApplication::styleHints();
+                if (styleHints->colorScheme() == Qt::ColorScheme::Dark) {
+                    jsonObj["theme"] = "dark";
+                    setDarkMode();
+                }
+                else if (styleHints->colorScheme() == Qt::ColorScheme::Light) {
+                    jsonObj["theme"] = "light";
+                    setLightMode();
+                }
+                else {
+                    jsonObj["theme"] = "light";
+                    setLightMode();
+                }
+                QJsonDocument jsonDoc;
+                jsonDoc.setObject(jsonObj);
+                themeSettingsFile->write(jsonDoc.toJson(QJsonDocument::JsonFormat::Indented));
+                themeSettingsFile->encodeName("UTF-8");
+                themeSettingsFile->close();
+            }
+        }
+        if (fontSettingsFile->exists() && fontSettingsFile->size()!=0) {
+            if (fontSettingsFile->open(QIODevice::ReadOnly)) {
+                QByteArray bytes = fontSettingsFile->readAll();
+                fontSettingsFile->close();
+                
+                QJsonParseError parseError2;
+                QJsonDocument doc = QJsonDocument::fromJson(bytes, &parseError2);
+                if (parseError2.error == QJsonParseError::NoError) {
+                    if (doc.isObject()) {
+                        QJsonObject obj = doc.object();
+                        QFont font;
+                        font.setFamily(obj.value("font").toString());
+                        QApplication::setFont(font);                        
+                    }
+                }
+                else {
+                    QMessageBox msgBox2;
+                    msgBox2.warning(this, "Font settings file: Parse error", "Failed to parse JSON data: "+parseError2.errorString()+"Click OK to continue anyway.");
+                    msgBox2.show();
+                }
+            }
+        }
+        else {
+            if (fontSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                QJsonObject jsonObj2;
+                QFont defaultFont;
+                defaultFont.setFamily(defaultFont.defaultFamily());
+                jsonObj2["font"] = defaultFont.family();
+                QApplication::setFont(defaultFont);
+                QJsonDocument jsonDoc2;
+                jsonDoc2.setObject(jsonObj2);
+                fontSettingsFile->write(jsonDoc2.toJson(QJsonDocument::JsonFormat::Indented));
+                fontSettingsFile->encodeName("UTF-8");
+                fontSettingsFile->close();
+            }
+        }
+    }
+    else {
+        QDir::home().mkdir("CryptographerData");
+        if (themeSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+            QJsonObject jsonObj;
+            QStyleHints *styleHints = QGuiApplication::styleHints();
+            if (styleHints->colorScheme() == Qt::ColorScheme::Dark) {
+                jsonObj["theme"] = "dark";
+                setDarkMode();
+            }
+            else if (styleHints->colorScheme() == Qt::ColorScheme::Light) {
+                jsonObj["theme"] = "light";
+                setLightMode();
+            }
+            else {
+                jsonObj["theme"] = "light";
+                setLightMode();
+            }
+            QJsonDocument jsonDoc;
+            jsonDoc.setObject(jsonObj);
+            themeSettingsFile->write(jsonDoc.toJson(QJsonDocument::JsonFormat::Indented));
+            themeSettingsFile->encodeName("UTF-8");
+            themeSettingsFile->close();
+        }
+        if (fontSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+            QJsonObject jsonObj2;
+            QFont defaultFont;
+            defaultFont.setFamily(defaultFont.defaultFamily());
+            jsonObj2["font"] = defaultFont.family();
+            QApplication::setFont(defaultFont);
+            QJsonDocument jsonDoc2;
+            jsonDoc2.setObject(jsonObj2);
+            fontSettingsFile->write(jsonDoc2.toJson(QJsonDocument::JsonFormat::Indented));
+            fontSettingsFile->encodeName("UTF-8");
+            fontSettingsFile->close();
+        }
+    }
 
     menuBar = new QMenuBar(this);
     menuBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -62,8 +202,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     darkMode = new QAction("Dark Mode", appearanceMenu);
     connect(darkMode, SIGNAL(triggered()), this, SLOT(setDarkMode()));
+    connect(darkMode, SIGNAL(triggered()), this, SLOT(saveDarkMode()));
     lightMode = new QAction("Light Mode", appearanceMenu);
     connect(lightMode, SIGNAL(triggered()), this, SLOT(setLightMode()));
+    connect(lightMode, SIGNAL(triggered()), this, SLOT(saveLightMode()));
 
     reportIssue = new QAction("Report an issue", helpMenu);
     connect(reportIssue, SIGNAL(triggered()), this, SLOT(reportIssueFunc()));
@@ -103,20 +245,22 @@ MainWindow::MainWindow(QWidget *parent)
     menuBar->addMenu(fontMenu);
     menuBar->addMenu(exitMenu);
 
+    connect(this, SIGNAL(appFontChanged(QFont)), this, SLOT(saveFont()));
+
     QLabel *appTitle = new QLabel("<u>Cryptographer</u>", this);
 
     // Create a slot to update the font of topLabel
     auto updateAppTitleFont = [appTitle]() {
         QFont appTitleFont = QApplication::font();
         appTitleFont.setBold(true);
-        appTitleFont.setPixelSize(40);
+        appTitleFont.setPixelSize(50);
         appTitle->setFont(appTitleFont);
     };
 
     // Connect the fontChanged signal
     connect(this, &MainWindow::appFontChanged, this, [appTitle](QFont newFont) {
         newFont.setBold(true);
-        newFont.setPixelSize(40);
+        newFont.setPixelSize(50);
         appTitle->setFont(newFont);
     });
 
@@ -127,22 +271,22 @@ MainWindow::MainWindow(QWidget *parent)
     auto updateAppDescFont = [appDesc]() {
         QFont appDescFont = QApplication::font();
         appDescFont.setBold(true);
-        appDescFont.setPixelSize(25);
+        appDescFont.setPixelSize(30);
         appDesc->setFont(appDescFont);
     };
     connect(this, &MainWindow::appFontChanged, this, [appDesc](QFont newFont) {
         newFont.setBold(true);
-        newFont.setPixelSize(25);
+        newFont.setPixelSize(30);
         appDesc->setFont(newFont);
     });
     updateAppDescFont();
 
     QPushButton *cipher = new QPushButton("Cipher a new message");
-    cipher->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    cipher->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
     connect(cipher, SIGNAL(clicked()), this, SLOT(cipherInputDialog()));
 
     QPushButton *decipher = new QPushButton("Decipher an already ciphered message");
-    decipher->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    decipher->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
     connect(decipher, SIGNAL(clicked()), this, SLOT(decipherText()));
 
     auto updateButtonsFont = [cipher, decipher]() {
@@ -158,12 +302,22 @@ MainWindow::MainWindow(QWidget *parent)
     });
     updateButtonsFont();
 
+    QLabel *appIconLabel = new QLabel(this);
+    QIcon appIcon = QIcon(":/Cryptographer.svg");
+    QPixmap appIconPix = appIcon.pixmap(QSize(90, 90));
+    appIconLabel->setPixmap(appIconPix);
+
     // Create layouts
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QHBoxLayout *buttonLayout = new QHBoxLayout();  // New layout for buttons
+    QHBoxLayout *titleLayout = new QHBoxLayout();
 
     // Add widgets to layouts
-    mainLayout->addWidget(appTitle, 0, Qt::AlignTop | Qt::AlignHCenter);
+    titleLayout->addWidget(appIconLabel);
+    titleLayout->addWidget(appTitle);
+    titleLayout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+
+    mainLayout->addLayout(titleLayout);
     mainLayout->addSpacing(25); //add some spacing here
     mainLayout->addWidget(appDesc, 0, Qt::AlignTop | Qt::AlignHCenter);
     mainLayout->addStretch(); // Add stretch to push buttons to the center
@@ -184,7 +338,7 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::setDarkMode()
 {
-    QApplication::setStyle("fusion");
+    //QApplication::setStyle("fusion");
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window,QColor(35,35,35));
     darkPalette.setColor(QPalette::WindowText,Qt::white);
@@ -197,7 +351,7 @@ void MainWindow::setDarkMode()
     darkPalette.setColor(QPalette::Disabled,QPalette::Text,QColor(127,127,127));
     darkPalette.setColor(QPalette::Dark,QColor(35,35,35));
     darkPalette.setColor(QPalette::Shadow,QColor(20,20,20));
-    darkPalette.setColor(QPalette::Button,QColor(35,35, 35));
+    darkPalette.setColor(QPalette::Button,QColor(42,42,42));
     darkPalette.setColor(QPalette::ButtonText,Qt::white);
     darkPalette.setColor(QPalette::Disabled,QPalette::ButtonText,QColor(127,127,127));
     darkPalette.setColor(QPalette::BrightText,Qt::red);
@@ -206,13 +360,13 @@ void MainWindow::setDarkMode()
     darkPalette.setColor(QPalette::Disabled,QPalette::Highlight,QColor(80,80,80));
     darkPalette.setColor(QPalette::HighlightedText,Qt::white);
     darkPalette.setColor(QPalette::Disabled,QPalette::HighlightedText,QColor(127,127,127));
+
     QApplication::setPalette(darkPalette);
 }
 
 void MainWindow::setLightMode()
 {
-    // QApplication::setPalette(QApplication::style()->standardPalette());
-    QApplication::setStyle("fusion");
+    //QApplication::setStyle("fusion");
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, QColor(240, 240, 240));
     lightPalette.setColor(QPalette::WindowText, Qt::black);
@@ -230,7 +384,7 @@ void MainWindow::setLightMode()
     lightPalette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
     lightPalette.setColor(QPalette::BrightText, Qt::red);
     lightPalette.setColor(QPalette::Link, QColor(42, 130, 218));
-    lightPalette.setColor(QPalette::Highlight, QColor(70, 130, 180));
+    lightPalette.setColor(QPalette::Highlight, QColor(130, 190, 255));
     lightPalette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
     lightPalette.setColor(QPalette::HighlightedText, Qt::black);
     lightPalette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
@@ -242,17 +396,24 @@ void MainWindow::aboutMsg()
 {
     QDialog aboutDialog(this);
     aboutDialog.setWindowTitle("About Cryptographer");
-    aboutDialog.resize(400, 300);
+    aboutDialog.resize(550, 400);
     aboutDialog.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     QVBoxLayout* layout = new QVBoxLayout(&aboutDialog);
     layout->setContentsMargins(40, 40, 40, 40);
     layout->setSpacing(10);
 
+    QLabel *titleIconLabel = new QLabel(this);
+    QIcon titleIcon = QIcon(":/Cryptographer.svg");
+    QPixmap titleIconPix = titleIcon.pixmap(QSize(75, 75));
+    titleIconLabel->setPixmap(titleIconPix);
+    titleIconLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(titleIconLabel);
+
     QLabel* titleLabel = new QLabel("Cryptographer");
     titleLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold;");
+    titleLabel->setStyleSheet("font-size: 25px; font-weight: bold;");
     layout->addWidget(titleLabel);
 
     QPushButton* versionBtn = new QPushButton();
@@ -442,7 +603,7 @@ void MainWindow::cipherInputDialog()
 
 void MainWindow::cipherEnterMsg()
 {
-    message = QInputDialog::getText(this, "Cipher a new message", "Enter message to be ciphered:");
+    message = QInputDialog::getMultiLineText(this, "Cipher a new message", "Enter message to be ciphered:");
     cipherInput->close();
     cipherText();
 }
@@ -594,7 +755,7 @@ void MainWindow::decipherText()
                 decipherInfo->setWindowTitle("Message deciphered successfully");
                 decipherInfo->resize(400, 100);
                 QVBoxLayout *vbox2 = new QVBoxLayout(decipherInfo);
-                QLabel *label = new QLabel("The message is: "+decipheredMsg);
+                QLabel *label = new QLabel("The message is: \n\n"+decipheredMsg);
                 QPushButton *copy = new QPushButton("Copy message");
                 connect(copy, SIGNAL(clicked()), this, SLOT(copyMsg()));
                 vbox2->addWidget(label);
@@ -619,4 +780,88 @@ void MainWindow::copyMsg()
 {
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(decipheredMsg);
+}
+
+void MainWindow::saveDarkMode()
+{
+    QByteArray bytes;
+    if (themeSettingsFile->open(QIODevice::ReadOnly)) {
+        bytes = themeSettingsFile->readAll();
+        themeSettingsFile->close();
+    }
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(bytes, &error);
+    if (error.error == QJsonParseError::NoError) {
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            obj["theme"] = "dark";
+            QJsonDocument doc2;
+            doc2.setObject(obj);
+            if (themeSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                themeSettingsFile->resize(0);
+                themeSettingsFile->write(doc2.toJson(QJsonDocument::JsonFormat::Indented));
+                themeSettingsFile->encodeName("UTF-8");
+                themeSettingsFile->close();
+            }
+        }
+    }
+    else {
+        QMessageBox::warning(this, "JSON Parse Error", "Failed to parse settings JSON file: "+error.errorString());
+    }
+}
+
+void MainWindow::saveLightMode()
+{
+    QByteArray bytes;
+    if (themeSettingsFile->open(QIODevice::ReadOnly)) {
+        bytes = themeSettingsFile->readAll();
+        themeSettingsFile->close();
+    }
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(bytes, &error);
+    if (error.error == QJsonParseError::NoError) {
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            obj["theme"] = "light";
+            QJsonDocument doc2;
+            doc2.setObject(obj);
+            if (themeSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                themeSettingsFile->resize(0);
+                themeSettingsFile->write(doc2.toJson(QJsonDocument::JsonFormat::Indented));
+                themeSettingsFile->encodeName("UTF-8");
+                themeSettingsFile->close();
+            }
+        }
+    }
+    else {
+        QMessageBox::warning(this, "JSON Parse Error", "Failed to parse settings JSON file: "+error.errorString());
+    }
+}
+
+void MainWindow::saveFont()
+{
+    QByteArray bytes;
+    if (fontSettingsFile->open(QIODevice::ReadOnly)) {
+        bytes = fontSettingsFile->readAll();
+        fontSettingsFile->close();
+    }
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(bytes, &error);
+    if (error.error == QJsonParseError::NoError) {
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            obj["font"] = QApplication::font().family();
+            QJsonDocument doc2;
+            doc2.setObject(obj);
+            if (fontSettingsFile->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+                fontSettingsFile->resize(0);
+                fontSettingsFile->write(doc2.toJson(QJsonDocument::JsonFormat::Indented));
+                fontSettingsFile->encodeName("UTF-8");
+                fontSettingsFile->close();
+            }
+        }
+    }
+    else {
+        QMessageBox::warning(this, "JSON Parse Error", "Failed to parse settings JSON file: "+error.errorString());
+    }
 }
