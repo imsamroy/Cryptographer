@@ -79,7 +79,7 @@ For Windows users, Cryptographer can be installed on your Windows system using t
 
 #### Uninstall from Windows system:
 
-For Windows users, Cryptographer can be uninstalled using the Maintenance Tool which is added in your system during the installation process.
+For Windows users, Cryptographer can be uninstalled using the Maintenance Tool which is added in your system during the installation process
 
 - Open the folder which you selected as the installation directory during the installation process
 
