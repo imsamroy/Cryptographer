@@ -3,7 +3,7 @@ name: Compile and Deploy for Windows
 on: push
 
 env:
-  QT_VERSION: "6.6.1"
+  QT_VERSION: "6.7.3"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
   BUILD_TYPE: Release
