@@ -3,7 +3,7 @@ name: Compile and Deploy for Windows
 on: push
 
 env:
-  QT_VERSION: "6.6.*"
+  QT_VERSION: "6.7.3"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
   BUILD_TYPE: Release
@@ -32,9 +32,9 @@ jobs:
 
     - name: Set Qt path for qmake
       run: |
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_PATH
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_ENV
-        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $env:QMAKE_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.7.3/mingw_64/bin" >> $GITHUB_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.7.3/mingw_64/bin" >> $GITHUB_ENV
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.7.3/mingw_64/bin" >> $env:QMAKE_PATH
       shell: powershell
 
     - name: Configure qmake Project
