@@ -15,8 +15,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Specific MinGW Version
-      run: choco install mingw --version=9.0.0 --params "/InstallDir:C:/mingw"
+    - name: Install MinGW
+      uses: crazy-max/ghaction-chocolatey@v3
+      with:
+        args: install mingw --yes
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -25,15 +27,16 @@ jobs:
         target: "desktop"
         version: ${{ env.QT_VERSION }}
         arch: ${{ env.MINGW_VERSION }}
-        dir: "${{github.workspace}}/qt"
+        dir: "${{ github.workspace }}/qt"
         install-deps: "true"
 
-    - name: Add Qt and Mingw to Path
+    - name: Add Qt and MinGW to PATH
       run: |
-        echo "${{github.workspace}}/qt/Qt/6.6.3/${{env.MINGW_PATH}}/bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" >> $GITHUB_PATH
+        echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
 
     - name: Configure qmake Project
-      working-directory: ${{github.workspace}}
+      working-directory: ${{ github.workspace }}
       run: qmake -spec win32-g++ -o Makefile
 
     - name: Build Project
@@ -41,13 +44,13 @@ jobs:
 
     - name: Deploy with windeployqt
       run: |
-        mkdir -p ${{github.workspace}}/build/windows-deployed
-        cp ${{github.workspace}}/release/Cryptographer.exe ${{github.workspace}}/build/windows-deployed
-        cd ${{github.workspace}}/build/windows-deployed
+        mkdir -p ${{ github.workspace }}/build/windows-deployed
+        cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
+        cd ${{ github.workspace }}/build/windows-deployed
         windeployqt.exe Cryptographer.exe --release --verbose 2
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: windows-deployed
-        path: ${{github.workspace}}/build/windows-deployed
+        path: ${{ github.workspace }}/build/windows-deployed
