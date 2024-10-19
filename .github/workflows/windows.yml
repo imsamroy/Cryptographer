@@ -40,7 +40,7 @@ jobs:
       run: qmake -o Makefile
 
     - name: Build Project
-      run: mingw64-make.exe
+      run: make.exe Makefile
 
     - name: Deploy with windeployqt
       run: |
