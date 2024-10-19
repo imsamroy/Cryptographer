@@ -37,7 +37,7 @@ jobs:
 
     - name: Configure qmake Project
       working-directory: ${{ github.workspace }}
-      run: qmake -spec win64-g++ -o Makefile
+      run: qmake -o Makefile
 
     - name: Build Project
       run: mingw64-make.exe
