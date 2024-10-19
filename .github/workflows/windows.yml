@@ -37,10 +37,10 @@ jobs:
 
     - name: Configure qmake Project
       working-directory: ${{ github.workspace }}
-      run: qmake -spec win32-g++ -o Makefile
+      run: qmake -spec win64-g++ -o Makefile
 
     - name: Build Project
-      run: mingw32-make.exe
+      run: mingw64-make.exe
 
     - name: Deploy with windeployqt
       run: |
