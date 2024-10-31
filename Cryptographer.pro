@@ -8,7 +8,7 @@ CONFIG += debug
 # Only add ASan flags in debug mode
 debug {
     QMAKE_CXXFLAGS += -fsanitize=address -g
-    QMAKE_LFLAGS += -fsanitize=address -shared-libasan
+    QMAKE_LFLAGS += -fsanitize=address
 }
 
 # Increase stack size if needed
