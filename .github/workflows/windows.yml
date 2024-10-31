@@ -18,7 +18,7 @@ jobs:
     - name: Install MinGW and gdb
       uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw gdb --version=11.2.0
+        args: install mingw --version=11.2.0
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
