@@ -6,7 +6,8 @@ env:
   QT_VERSION: "6.6.3"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
-  BUILD_TYPE: Debug  # Debug build for detailed stack traces
+  BUILD_TYPE: Debug  # Use Debug mode for detailed stack traces
+  ASAN_OPTIONS: detect_leaks=1  # AddressSanitizer option to detect memory leaks
 
 jobs:
   build:
@@ -34,19 +35,16 @@ jobs:
       run: |
         echo "${{ github.workspace }}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" >> $GITHUB_PATH
         echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
-        echo "Current PATH: $PATH"  # Print current PATH for debugging
+        echo "PATH updated."
 
     - name: Configure qmake Project with AddressSanitizer
       working-directory: ${{ github.workspace }}
       run: |
-        qmake -o Makefile CONFIG+=debug || { echo "qmake failed"; exit 1; }  # Debug build for detailed logs
-      env:
-        QMAKE_CXXFLAGS: "-fsanitize=address"
-        QMAKE_LDFLAGS: "-fsanitize=address"
+        qmake CONFIG+=debug CONFIG+=address_sanitizer -o Makefile || { echo "qmake failed"; exit 1; }
 
     - name: Build Project with AddressSanitizer
       run: |
-        make.exe || { echo "Build failed"; exit 1; }  # Ensure make fails if the build fails
+        make.exe || { echo "Build failed"; exit 1; }
 
     - name: Deploy with windeployqt
       run: |
@@ -54,13 +52,17 @@ jobs:
         mkdir -p ${{ github.workspace }}/build/windows-deployed
         cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --release --verbose 2 || { echo "Deployment failed"; exit 1; }  # Check if deployment fails
+        windeployqt.exe Cryptographer.exe --release --verbose 2 || { echo "Deployment failed"; exit 1; }
 
     - name: Run Application with gdb for Debugging
       run: |
         cd ${{ github.workspace }}/build/windows-deployed
-        echo "run" > gdb_commands
-        echo "bt" >> gdb_commands
+        echo "set logging on" > gdb_commands
+        echo "set logging file gdb_full_log.txt" >> gdb_commands
+        echo "run" >> gdb_commands
+        echo "bt full" >> gdb_commands  # Detailed backtrace
+        echo "info registers" >> gdb_commands  # Register information
+        echo "info threads" >> gdb_commands  # Thread information
         echo "quit" >> gdb_commands
         gdb -batch -x gdb_commands --args Cryptographer.exe > gdb_output.txt 2>&1 || { echo "GDB execution failed"; exit 1; }
       continue-on-error: true  # Allows workflow to continue even if gdb returns a non-zero exit code
@@ -70,7 +72,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: gdb-logs
-        path: ${{ github.workspace }}/build/windows-deployed/gdb_output.txt
+        path: |
+          ${{ github.workspace }}/build/windows-deployed/gdb_output.txt
+          ${{ github.workspace }}/build/windows-deployed/gdb_full_log.txt
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
