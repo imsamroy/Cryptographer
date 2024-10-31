@@ -4,7 +4,13 @@ QT += network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
-CONFIG += release
+CONFIG += debug
+
+QMAKE_CXXFLAGS += -fsanitize=address
+QMAKE_LFLAGS += -fsanitize=address
+LIBS += -static-libasan
+
+QMAKE_LFLAGS += -Wl,--stack,2097152
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
