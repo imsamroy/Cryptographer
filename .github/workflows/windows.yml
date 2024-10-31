@@ -1,4 +1,4 @@
-name: Compile, Deploy, and Debug for Windows
+name: Compile, Debug, and Deploy for Windows with ASan
 
 on: push
 
@@ -6,7 +6,7 @@ env:
   QT_VERSION: "6.6.3"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug  # Using Debug to get detailed stack traces
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install MinGW and gdb
+    - name: Install MinGW
       uses: crazy-max/ghaction-chocolatey@v3
       with:
         args: install mingw --version=11.2.0
@@ -35,11 +35,14 @@ jobs:
         echo "${{ github.workspace }}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" >> $GITHUB_PATH
         echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
 
-    - name: Configure qmake Project
+    - name: Configure qmake Project with AddressSanitizer
       working-directory: ${{ github.workspace }}
-      run: qmake -o Makefile
+      run: qmake -o Makefile CONFIG+=debug  # Debug build for detailed logs
+      env:
+        QMAKE_CXXFLAGS: "-fsanitize=address"
+        QMAKE_LDFLAGS: "-fsanitize=address"
 
-    - name: Build Project
+    - name: Build Project with AddressSanitizer
       run: make.exe
 
     - name: Deploy with windeployqt
@@ -49,12 +52,22 @@ jobs:
         cd ${{ github.workspace }}/build/windows-deployed
         windeployqt.exe Cryptographer.exe --release --verbose 2
 
-    - name: Run application with gdb for debugging
+    - name: Run Application with gdb for Debugging
+      # Running gdb in batch mode to capture a backtrace if the application crashes
       run: |
         cd ${{ github.workspace }}/build/windows-deployed
-        echo "Running gdb in batch mode to capture backtrace on crash"
-        gdb -batch -ex "run" -ex "bt" --args ./Cryptographer.exe || echo "App crashed; see gdb output above"
-      continue-on-error: true
+        echo "run" > gdb_commands
+        echo "bt" >> gdb_commands
+        echo "quit" >> gdb_commands
+        gdb -batch -x gdb_commands --args Cryptographer.exe
+      continue-on-error: true  # Allows workflow to continue even if gdb returns a non-zero exit code
+
+    - name: Upload Debug Logs
+      if: failure()  # Only upload logs if there was a failure
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-logs
+        path: ${{ github.workspace }}/build/windows-deployed/gdb.txt
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
