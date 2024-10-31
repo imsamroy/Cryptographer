@@ -6,7 +6,7 @@ env:
   QT_VERSION: "6.6.3"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
-  BUILD_TYPE: Debug  # Using Debug to get detailed stack traces
+  BUILD_TYPE: Debug  # Debug build for detailed stack traces
 
 jobs:
   build:
@@ -59,15 +59,15 @@ jobs:
         echo "run" > gdb_commands
         echo "bt" >> gdb_commands
         echo "quit" >> gdb_commands
-        gdb -batch -x gdb_commands --args Cryptographer.exe
+        gdb -batch -x gdb_commands --args Cryptographer.exe > gdb_output.txt 2>&1
       continue-on-error: true  # Allows workflow to continue even if gdb returns a non-zero exit code
 
     - name: Upload Debug Logs
       if: failure()  # Only upload logs if there was a failure
       uses: actions/upload-artifact@v4
       with:
-        name: debug-logs
-        path: ${{ github.workspace }}/build/windows-deployed/gdb.txt
+        name: gdb-logs
+        path: ${{ github.workspace }}/build/windows-deployed/gdb_output.txt
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
