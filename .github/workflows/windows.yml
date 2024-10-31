@@ -1,4 +1,4 @@
-name: Compile and Deploy for Windows
+name: Compile, Deploy, and Debug for Windows
 
 on: push
 
@@ -15,10 +15,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install MinGW
+    - name: Install MinGW and gdb
       uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw --version=11.2.0
+        args: install mingw gdb --version=11.2.0
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -48,6 +48,13 @@ jobs:
         cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
         windeployqt.exe Cryptographer.exe --release --verbose 2
+
+    - name: Run application with gdb for debugging
+      run: |
+        cd ${{ github.workspace }}/build/windows-deployed
+        echo "Running gdb in batch mode to capture backtrace on crash"
+        gdb -batch -ex "run" -ex "bt" --args ./Cryptographer.exe || echo "App crashed; see gdb output above"
+      continue-on-error: true
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
