@@ -34,32 +34,35 @@ jobs:
       run: |
         echo "${{ github.workspace }}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" >> $GITHUB_PATH
         echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
+        echo "Current PATH: $PATH"  # Print current PATH for debugging
 
     - name: Configure qmake Project with AddressSanitizer
       working-directory: ${{ github.workspace }}
-      run: qmake -o Makefile CONFIG+=debug  # Debug build for detailed logs
+      run: |
+        qmake -o Makefile CONFIG+=debug || { echo "qmake failed"; exit 1; }  # Debug build for detailed logs
       env:
         QMAKE_CXXFLAGS: "-fsanitize=address"
         QMAKE_LDFLAGS: "-fsanitize=address"
 
     - name: Build Project with AddressSanitizer
-      run: make.exe
+      run: |
+        make.exe || { echo "Build failed"; exit 1; }  # Ensure make fails if the build fails
 
     - name: Deploy with windeployqt
       run: |
+        echo "Deploying..."
         mkdir -p ${{ github.workspace }}/build/windows-deployed
         cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --release --verbose 2
+        windeployqt.exe Cryptographer.exe --release --verbose 2 || { echo "Deployment failed"; exit 1; }  # Check if deployment fails
 
     - name: Run Application with gdb for Debugging
-      # Running gdb in batch mode to capture a backtrace if the application crashes
       run: |
         cd ${{ github.workspace }}/build/windows-deployed
         echo "run" > gdb_commands
         echo "bt" >> gdb_commands
         echo "quit" >> gdb_commands
-        gdb -batch -x gdb_commands --args Cryptographer.exe > gdb_output.txt 2>&1
+        gdb -batch -x gdb_commands --args Cryptographer.exe > gdb_output.txt 2>&1 || { echo "GDB execution failed"; exit 1; }
       continue-on-error: true  # Allows workflow to continue even if gdb returns a non-zero exit code
 
     - name: Upload Debug Logs
