@@ -50,9 +50,9 @@ jobs:
       run: |
         echo "Deploying..."
         mkdir -p ${{ github.workspace }}/build/windows-deployed
-        cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
+        cp ${{ github.workspace }}/debug/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --release --verbose 2 || { echo "Deployment failed"; exit 1; }
+        windeployqt.exe Cryptographer.exe --debug --verbose 2 || { echo "Deployment failed"; exit 1; }
 
     - name: Run Application with gdb for Debugging
       run: |
