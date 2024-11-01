@@ -1,12 +1,12 @@
-name: Compile, Debug, and Deploy for Windows with ASan
+name: Compile and Deploy for Windows
 
 on: push
 
 env:
-  QT_VERSION: "6.6.3"
+  QT_VERSION: "6.6.1"
   MINGW_VERSION: "win64_mingw"
   MINGW_PATH: "mingw_64"
-  BUILD_TYPE: Debug  # Debug build for detailed stack traces
+  BUILD_TYPE: Release
 
 jobs:
   build:
@@ -15,10 +15,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install MinGW
+    - name: Install correct version of Mingw
       uses: crazy-max/ghaction-chocolatey@v3
       with:
-        args: install mingw --version=11.2.0
+        args: install mingw
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v3
@@ -27,53 +27,32 @@ jobs:
         target: "desktop"
         version: ${{ env.QT_VERSION }}
         arch: ${{ env.MINGW_VERSION }}
-        dir: "${{ github.workspace }}/qt"
+        dir: "${{github.workspace}}/qt"
         install-deps: "true"
 
-    - name: Add Qt and MinGW to PATH
+    - name: Set Qt path for qmake
       run: |
-        echo "${{ github.workspace }}/qt/Qt/${{ env.QT_VERSION }}/${{ env.MINGW_PATH }}/bin" >> $GITHUB_PATH
-        echo "C:/ProgramData/chocolatey/bin" >> $GITHUB_PATH
-        echo "Current PATH: $PATH"  # Print current PATH for debugging
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_PATH
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $GITHUB_ENV
+        echo "D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.1/mingw_64/bin" >> $env:QMAKE_PATH
+      shell: powershell
 
-    - name: Configure qmake Project with AddressSanitizer
-      working-directory: ${{ github.workspace }}
+    - name: Configure qmake Project
+      working-directory: ${{github.workspace}}
+      run: qmake -spec win32-g++ -o Makefile
+
+    - name: Build project
+      run: mingw32-make.exe
+
+    - name: Compress portable program
       run: |
-        qmake -o Makefile || { echo "qmake failed"; exit 1; }  # Debug build for detailed logs
-      env:
-        QMAKE_CXXFLAGS: "-fsanitize=address"
-        QMAKE_LDFLAGS: "-fsanitize=address"
-
-    - name: Build Project with AddressSanitizer
-      run: |
-        make.exe || { echo "Build failed"; exit 1; }  # Ensure make fails if the build fails
-
-    - name: Deploy with windeployqt
-      run: |
-        echo "Deploying..."
-        mkdir -p ${{ github.workspace }}/build/windows-deployed
-        cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
-        cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --verbose 2 || { echo "Deployment failed"; exit 1; }  # Check if deployment fails
-
-    - name: Run Application with gdb for Debugging
-      run: |
-        cd ${{ github.workspace }}/build/windows-deployed
-        echo "run" > gdb_commands
-        echo "bt" >> gdb_commands
-        echo "quit" >> gdb_commands
-        gdb -batch -x gdb_commands --args Cryptographer.exe > gdb_output.txt 2>&1 || { echo "GDB execution failed"; exit 1; }
-      continue-on-error: true  # Allows workflow to continue even if gdb returns a non-zero exit code
-
-    - name: Upload Debug Logs
-      if: failure()  # Only upload logs if there was a failure
-      uses: actions/upload-artifact@v4
-      with:
-        name: gdb-logs
-        path: ${{ github.workspace }}/build/windows-deployed/gdb_output.txt
+        mkdir ${{github.workspace}}\build\windows-deployed\
+        cp D:/a/Cryptographer/Cryptographer/release/Cryptographer.exe ${{github.workspace}}\build\windows-deployed\
+        cd ${{github.workspace}}\build\windows-deployed\
+        windeployqt6.exe Cryptographer.exe --release
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: windows-deployed
-        path: ${{ github.workspace }}/build/windows-deployed
+        path: ${{github.workspace}}/build/windows-deployed
