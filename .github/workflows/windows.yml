@@ -39,7 +39,7 @@ jobs:
     - name: Configure qmake Project with AddressSanitizer
       working-directory: ${{ github.workspace }}
       run: |
-        qmake -o Makefile CONFIG+=debug || { echo "qmake failed"; exit 1; }  # Debug build for detailed logs
+        qmake -o Makefile || { echo "qmake failed"; exit 1; }  # Debug build for detailed logs
       env:
         QMAKE_CXXFLAGS: "-fsanitize=address"
         QMAKE_LDFLAGS: "-fsanitize=address"
@@ -52,9 +52,9 @@ jobs:
       run: |
         echo "Deploying..."
         mkdir -p ${{ github.workspace }}/build/windows-deployed
-        cp ${{ github.workspace }}/debug/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
+        cp ${{ github.workspace }}/release/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --debug --verbose 2 || { echo "Deployment failed"; exit 1; }  # Check if deployment fails
+        windeployqt.exe Cryptographer.exe --verbose 2 || { echo "Deployment failed"; exit 1; }  # Check if deployment fails
 
     - name: Run Application with gdb for Debugging
       run: |
