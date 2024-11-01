@@ -52,7 +52,8 @@ jobs:
         mkdir -p ${{ github.workspace }}/build/windows-deployed
         cp ${{ github.workspace }}/debug/Cryptographer.exe ${{ github.workspace }}/build/windows-deployed
         cd ${{ github.workspace }}/build/windows-deployed
-        windeployqt.exe Cryptographer.exe --debug --verbose 2 || { echo "Deployment failed"; exit 1; }
+        windeployqt --dir windows-deployed --qtpaths D:/a/Cryptographer/Cryptographer/qt/Qt/6.6.3/mingw_64/bin Cryptographer.exe
+ || { echo "Deployment failed"; exit 1; }
 
     - name: Run Application with gdb for Debugging
       run: |
