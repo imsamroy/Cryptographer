@@ -8,7 +8,7 @@ defaults:
 
 env:
   SOURCE_DIR:   ${{ github.workspace }}
-  QT_VERSION:   6.6.1
+  QT_VERSION:   6.8.0
   ARTIFACT:     Cryptographer-Linux-x86_64.AppImage
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
           wget -c "https://github.com/darealshinji/linuxdeploy-plugin-checkrt/releases/download/continuous/linuxdeploy-plugin-checkrt.sh"
           wget -c "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
           chmod a+x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-checkrt.sh linuxdeploy-plugin-qt-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/6.6.1/gcc_64/lib/
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/Qt/6.8.0/gcc_64/lib/
           ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable Cryptographer --create-desktop-file --icon-file ${{ env.SOURCE_DIR }}/Cryptographer.svg --plugin qt --plugin checkrt --output appimage
           mv Cryptographer*.AppImage ${{ env.ARTIFACT }}
       
