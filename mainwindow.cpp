@@ -338,7 +338,7 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::setDarkMode()
 {
-    //QApplication::setStyle("fusion");
+    QApplication::setStyle("fusion");
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window,QColor(35,35,35));
     darkPalette.setColor(QPalette::WindowText,Qt::white);
@@ -366,7 +366,7 @@ void MainWindow::setDarkMode()
 
 void MainWindow::setLightMode()
 {
-    //QApplication::setStyle("fusion");
+    QApplication::setStyle("fusion");
     QPalette lightPalette;
     lightPalette.setColor(QPalette::Window, QColor(240, 240, 240));
     lightPalette.setColor(QPalette::WindowText, Qt::black);
