@@ -90,7 +90,7 @@ For Windows users, Cryptographer can be uninstalled using the Maintenance Tool w
 ## Building from source
 
 - Follow any online guide to install the following on your system to be able to build from source:
-  - Qt (either Qt5 or Qt6)
+  - Qt (preferably >=6.5)
   - GCC (for Linux), or MinGW (for Windows)
 
 - On Linux if you have git installed then run:
